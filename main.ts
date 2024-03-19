@@ -15,22 +15,22 @@ export default class EdmPlugin extends Plugin {
 			const drop = await this.forceFolder('_edm');
 			if (file && file.parent?.path == drop.path) {
 				const sorted = await this.forceFolder('Sorted');
-				const resRel = '_resources/_edm';
-				const resAbs = await this.forceFolder(`${sorted.path}/${resRel}`);
-				const attName = `${uuidv4()}.${file.extension}`;
 				const ctime = format(new Date(file.stat.ctime), 'yyyy-MM-dd');
-				const mdPath = `${sorted.path}/${ctime} ${file.basename}.md`;
+				const mdBaseName = `${ctime} ${file.basename}`
+				const attDir = await this.forceFolder(`${sorted.path}/_attachments/${mdBaseName}`);
+				const mdPath = `${sorted.path}/${mdBaseName}.md`;
 				if (this.app.vault.getFileByPath(mdPath) != null) {
-					new Notice(`Note '${mdPath}' already exists`);
+					new Notice(`Note '${mdPath}' already exists 👎😕`);
 					return;
 				}
 				const mdData = `---
 tags:
+  - _UNSORTED_
 ---
-![[${resRel}/${attName}]]`
-				const msg = `Note '${mdPath}' created for '${file.name}'`;
+![[${attDir.path}/${file.name}]]`
+				const msg = `Note '${mdPath}' created for '${file.name}' 🙂👍`;
 				await this.app.vault.create(mdPath, mdData)
-				await this.app.vault.rename(file, `${resAbs.path}/${attName}`);
+				await this.app.vault.rename(file, `${attDir.path}/${file.name}`);
 				new Notice(msg);
 			}
 		})
